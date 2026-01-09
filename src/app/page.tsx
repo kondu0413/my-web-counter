@@ -37,9 +37,10 @@ export default function Home() {
    * 【handleDecrement 関数】
    * 「－」ボタンがクリックされたときに実行される関数です
    * 現在の count の値から 1 を引いて、新しい値を設定します
+   * ただし、カウントが 0 未満にならないように制限しています
    */
   const handleDecrement = () => {
-    setCount(count - 1); // count の値を 1 減らす
+    setCount(Math.max(0, count - 1)); // count の値を 1 減らす（ただし 0 未満にはならない）
   };
 
   /**
