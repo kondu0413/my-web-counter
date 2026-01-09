@@ -34,6 +34,15 @@ export default function Home() {
   const [count, setCount] = useState(0);
 
   /**
+   * 【handleDecrement 関数】
+   * 「－」ボタンがクリックされたときに実行される関数です
+   * 現在の count の値から 1 を引いて、新しい値を設定します
+   */
+  const handleDecrement = () => {
+    setCount(count - 1); // count の値を 1 減らす
+  };
+
+  /**
    * 【handleIncrement 関数】
    * 「＋」ボタンがクリックされたときに実行される関数です
    * 現在の count の値に 1 を足して、新しい値を設定します
@@ -71,6 +80,17 @@ export default function Home() {
 
         {/* ボタン群のコンテナ */}
         <div className="flex gap-4">
+          {/* －ボタン */}
+          {/* onClick は、ボタンがクリックされたときに実行する関数を指定します */}
+          {/* ここでは、handleDecrement 関数が実行されます */}
+          <button
+            onClick={handleDecrement}
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-3xl font-semibold text-white shadow-lg transition-all hover:bg-indigo-700 hover:scale-110 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+            aria-label="カウントを減らす"
+          >
+            －
+          </button>
+
           {/* ＋ボタン */}
           {/* onClick は、ボタンがクリックされたときに実行する関数を指定します */}
           {/* ここでは、handleIncrement 関数が実行されます */}
