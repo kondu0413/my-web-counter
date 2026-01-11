@@ -36,6 +36,13 @@ export default function Home() {
    * ハイドレーションエラーを避けることができます
    */
   const [count, setCount] = useState(0);
+  
+  /**
+   * 【useState（効果音ON/OFF）について】
+   * 効果音を鳴らすかどうかを管理する状態です
+   * デフォルトは true（ON）です
+   */
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   /**
    * 【useEffect（Audio インスタンス管理）について】
@@ -67,15 +74,21 @@ export default function Home() {
    * クリック音を再生する関数です
    * 
    * 処理内容：
-   * 1. 新しい Audio インスタンスを作成（連打対策：毎回新しいインスタンスを使用）
-   * 2. currentTime を 0 に設定して、最初から再生されるようにする
-   * 3. 音を再生する
+   * 1. soundEnabled が false の場合は、音を鳴らさずに終了
+   * 2. 新しい Audio インスタンスを作成（連打対策：毎回新しいインスタンスを使用）
+   * 3. currentTime を 0 に設定して、最初から再生されるようにする
+   * 4. 音を再生する
    * 
    * 連打対策：
    * → 毎回新しい Audio インスタンスを作成することで、前の再生を待たずに音が重なるようにします
    * → currentTime = 0 により、毎回最初から音が鳴ります
    */
   const playClickSound = () => {
+    // 効果音がOFFの場合は音を鳴らさない
+    if (!soundEnabled) {
+      return;
+    }
+    
     // 新しい Audio インスタンスを作成（連打対策）
     const clickSound = new Audio('/決定ボタンを押す7.mp3');
     
@@ -112,6 +125,13 @@ export default function Home() {
       // 文字列として保存されているので、数値に変換して設定
       setCount(parseInt(savedCount, 10));
     }
+    
+    // localStorageから保存された効果音の設定を読み込む
+    const savedSoundEnabled = localStorage.getItem('sound-enabled');
+    if (savedSoundEnabled !== null) {
+      // 文字列 'true' または 'false' を boolean に変換
+      setSoundEnabled(savedSoundEnabled === 'true');
+    }
   }, []); // 空の依存配列なので、マウント時のみ実行
 
   /**
@@ -127,6 +147,20 @@ export default function Home() {
     // カウント値が変更されるたびにlocalStorageに保存
     localStorage.setItem('counter-value', count.toString());
   }, [count]); // countが変更されるたびに実行
+
+  /**
+   * 【useEffect（効果音設定保存用）について】
+   * この useEffect は、soundEnabled の値が変更されるたびに実行されます
+   * 
+   * 処理内容：
+   * soundEnabled の値を localStorage の 'sound-enabled' というキーに保存します
+   * 
+   * これにより、ブラウザをリロードしても効果音のON/OFF設定が保持されます
+   */
+  useEffect(() => {
+    // 効果音設定が変更されるたびにlocalStorageに保存
+    localStorage.setItem('sound-enabled', soundEnabled.toString());
+  }, [soundEnabled]); // soundEnabledが変更されるたびに実行
 
   /**
    * 【handleDecrement 関数】
@@ -160,6 +194,15 @@ export default function Home() {
   };
 
   /**
+   * 【handleToggleSound 関数】
+   * 効果音のON/OFFを切り替える関数です
+   * soundEnabled の値を反転させます
+   */
+  const handleToggleSound = () => {
+    setSoundEnabled(!soundEnabled);
+  };
+
+  /**
    * 【return について】
    * return の後ろに書かれた内容が、実際に画面に表示されます
    * これは JSX（JavaScript XML）という形式で、HTMLに似ていますが、JavaScriptの機能も使えます
@@ -167,7 +210,43 @@ export default function Home() {
   return (
     // 外側の div: 画面全体の背景とレイアウトを設定
     // className は CSS のクラス名を指定する属性です（Tailwind CSS というスタイリングツールを使用）
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* 効果音ON/OFFトグルボタン（右上に配置） */}
+      <button
+        onClick={handleToggleSound}
+        className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/80 shadow-lg transition-all hover:bg-white hover:scale-110 active:scale-95 dark:bg-gray-700/80 dark:hover:bg-gray-700"
+        aria-label={soundEnabled ? '効果音をOFFにする' : '効果音をONにする'}
+      >
+        {soundEnabled ? (
+          // スピーカーONアイコン
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+          >
+            <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM18.584 5.106a.75.75 0 0 1 1.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 1 1-1.06-1.06c3.401-3.402 3.401-8.926 0-12.328a.75.75 0 0 1 0-1.06Z" />
+            <path d="M15.932 7.884a.75.75 0 0 1 1.06 0 6.003 6.003 0 0 1 0 8.488.75.75 0 1 1-1.06-1.06 4.503 4.503 0 0 0 0-6.368.75.75 0 0 1 0-1.06Z" />
+          </svg>
+        ) : (
+          // スピーカーOFFアイコン（斜線付き）
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="h-6 w-6 text-gray-500 dark:text-gray-400"
+          >
+            <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06Z" />
+            <path
+              fillRule="evenodd"
+              d="M17.78 9.22a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 1 1-1.06-1.06l5.5-5.5a.75.75 0 0 1 1.06 0Z"
+              clipRule="evenodd"
+            />
+            <path d="M15.932 7.884a.75.75 0 0 1 1.06 0 6.003 6.003 0 0 1 0 8.488.75.75 0 1 1-1.06-1.06 4.503 4.503 0 0 0 0-6.368.75.75 0 0 1 0-1.06Z" />
+          </svg>
+        )}
+      </button>
+
       {/* main: メインコンテンツの領域 */}
       <main className="flex flex-col items-center justify-center gap-8 p-8">
         {/* カウント表示エリア */}
